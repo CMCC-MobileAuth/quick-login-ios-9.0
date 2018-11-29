@@ -3,16 +3,18 @@ sdk技术问题沟通QQ群：609994083</br>
 
 **注意事项：**
 
-1. 目前SDK支持中国移动2/3/4G、中国电信4G的取号能力，中国联通的取号能力暂未开放。
-2. 由于运营商取号能力是通过数据网关实现，取号过程必须在数据流量打开的情况下才能进行（WiFi和数据流量同时打开时，SDK会强制切换到数据流量执行取号逻辑，将会消耗用户少量流量），当信号弱或者网络有干扰时，时延会高于平均值，取号成功率较低。
-3. SDK对iPhoneXS Max以及iPhoneXR双卡进行适配，原理是当两张卡的运营商不一致时，SDK会获取设备上网卡的运营商取号，但上网卡不一定会获取成功，若获取失败，则默认为移动运营商取号，会触发服务端取号失败，返回103111（非移动网关ip）；当SDK存在缓存，**两张卡的运营商不一致时，SDK会重新获取上网卡运营商与上一次取号的运营商进行对比**，若两次运营商不一致，**则以最新设置的上网卡的运营商为准**，重新取号；双卡运营商相同的情况则不需要重新取号。
-4. 取号前，请务必确保App被授权允许访问蜂窝网络，否则会触发SDK错误提示：200025（No route to host）。
+1. 认证取号服务必须打开蜂窝数据流量并且手机操作系统给予应用蜂窝数据权限才能使用
+2. 取号请求过程需要消耗用户少量数据流量（国外漫游时可能会产生额外的费用）
+3. 认证取号服务目前支持中国移动2/3/4G和中国电信4G
+4. 关于iPhoneXS Max以及iPhoneXR双卡的适配问题：
+   1. 当两张卡的运营商不一致时，SDK会获取设备上网卡的运营商并进行取号，但上网卡不一定会获取成功（飞行模式状态时），若获取失败，SDK将默认取号卡为移动运营商取号，如果匹配，则取号成功，否则SDK返回103111；
+   2. 当SDK存在缓存并且两张卡的运营商不相同时，SDK会重新获取上网卡运营商与上一次取号的运营商进行对比，若两次运营商不一致，则以最新设置的上网卡的运营商为准，重新取号，上次获取的缓存将自动失效；双卡运营商相同的情况则不需要重新取号。
 
 ## 1.1. 接入流程
 
 **1.申请appid和appkey**
 
-根据《开发者接入流程文档》，前往中国移动开发者社区（dev.10086.cn)，按照文档要求创建开发者账号并申请appid和appkey，并填写应用的包名.（bundle ID)
+根据《开发者接入流程文档》，前往中国移动开发者社区（dev.10086.cn)，按照文档要求创建开发者账号并申请appid和appkey，并填写应用的包名（bundle ID)。
 
 **2.申请能力**
 
@@ -65,7 +67,7 @@ sdk技术问题沟通QQ群：609994083</br>
 
 <div STYLE="page-break-after: always;"></div>
 
-**[2] 设置SDK取号以及获取token的超时时间**
+**[2] 设置SDK取号以及授权获取token的超时时间（不设置默认8s）**
 
 调用以下方法设置超时（**注：超时时间单位是毫秒**）
 
@@ -99,25 +101,16 @@ sdk技术问题沟通QQ群：609994083</br>
 
 ##2.2. 流程说明 
 
-1. 开发者调用取号方法，取号成功后，SDK将缓存取号临时凭证scrip。
+1. 应用发起取号请求，成功后，应用将得到手机号掩码，SDK将缓存取号临时凭证scrip。
 2. 开发者继承UAAuthViewController父类并创建授权页面控制器子类。
-3. 用户同意应用获取本机号码，调用授权登录方法，获取接口调用凭证token。
-4. 携带token进行接口调用，获取用户的手机号码信息。
-
-一键登录整体流程：
+3. 用户授权同意后，应用发起授权请求，成功后，应用将得到换号凭证token。
+4. 携带token请求获取手机号码接口，获取用户的手机号码信息。
 
 ![](image/login_process.png)
 
-##2.3. 取号方法
+##2.3. 取号请求
 
-在用户正式授权给开发者使用本机号码登录前，开发者可以提前调取预取号方法，获知当前用户的终端状态和网络环境是否可以从网关获取号码。
-
-
-
-为了保证SDK取号成功率，开发者在取号前必须保证：
-
-1. 运营商目前只支持中国移动2/3/4G和中国电信4G，开发者在调用取号方法前，可以预先判断当前用户的运营商类型和网络制式，仅针对SDK目前支持的运营商和网络制式使用一键登录功能。
-2. 受运营商取号原理的限制，网关取号必须在**数据流量打开且用户授权应用使用蜂窝数据网络**的情况下进行，因此，用户如果关闭数据流量，将无法成功取号。
+本方法用于发起取号请求，SDK完成网络判断、蜂窝数据网络切换等操作并缓存凭证scrip。
 
 **请求示例代码**
 
@@ -151,31 +144,31 @@ sdk技术问题沟通QQ群：609994083</br>
 
 为了确保用户在登录过程中将手机号码信息授权给开发者使用的知情权，一键登录需要开发者提供授权页登录页面供用户授权确认。开发者在调用授权登录方法前，必须弹出授权页，明确告知用户当前操作会将用户的本机号码信息传递给应用。授权页面的设计、布局、生成、弹出和消失，由开发者自行处理，但必须遵守移动认证授权页面设计规范。
 
-### 2.4.1. 调用逻辑
+注1：如果开发者需要使用**一键登录**服务，必须按照规定创建授权页面
 
-![](image/authPage.png)
+注2：**本机号码校验**不需要创建授权页面，可以直接跳过2.4章
 
-### 2.4.2. 页面规范细则
+### 2.4.1. 页面规范细则
 
 1、页面必须包含登录/注册按钮，授权登录方法必须绑定该按钮使用。
 
 2、登录按钮文字描述必须包含“登录”或“注册”等文字，不得诱导用户授权。
 
-3、页面需要提示应用获取到的是用户的本机号码，例如，可以在页面显示本机号码的掩码（securityPhone），或者提示用户将使用“本机号码”作为账号登录或注册。
+3、页面需要提示应用获取到的是用户的本机号码，例如，可以在页面显示本机号码的掩码（139xxxx0000），或者提示用户将使用“本机号码”作为账号登录或注册。
 
 4、页面必须包含移动认证协议条款，其中：
 
 ​	条款名称：《中国移动认证服务条款》
 
-​	条款页面地址：http://wap.cmpassport.com/resources/html/contract.html
+​	条款页面地址：https://wap.cmpassport.com/resources/html/contract.html
 
 5、应用在上线前需将满足上述1~4的授权页面（正式上线版的）截图提供给产品接口人审核。
 
 6、应用后续升级时，如果授权页面有较大改动（针对1~4内容进行修改），需将改动的授权页面截图提供给产品接口人审核。
 
-7、对于未遵照1~4设计要求，或通过技术手段故意屏蔽不弹出授权页面但获得调用接口凭证token的行为，移动有权将APP所有一键登录相关的能力下架，待整改后再重新上架服务。
+7、对于未遵照1~4设计要求，或通过技术手段故意屏蔽不弹出授权页面但获得调用接口凭证token的行为，能力提供方有权限制APP一键登录取号能力的使用，待整改后再恢复提供服务。
 
-### 2.4.3. 构建授权页控制器
+### 2.4.2. 构建授权页控制器
 
 授权登录页面由开发者设计和构建，在构建前，需继承SDK自有的控制器UAAuthViewController。
 
@@ -205,9 +198,14 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 [self presentViewController:authVC animated:YES completion:nil];
 ```
 
-## 2.5. 授权并获取接口凭证
+## 2.5. 授权请求
 
-用户调用授权方法，获取取号token（**注：显式登录的token传到统一认证服务端可以换取手机号，详见第2.6节；隐式登录的token只能用于本机号码校验，详见：第3节**）
+用户调用授权方法，获取取号token
+
+token使用注意事项：
+
+1. 如果应用在创建授权页的环节继承SDK自有的控制器UAAuthViewController，本方法获取的token允许到移动认证的服务端换取用户手机号码信息（详见2.6 获取手机号码）
+2. 如果应用**未**在创建授权页的环节继承SDK自有的控制器UAAuthViewController，本方法获取的token只能用于做本机号码校验（详见2.7 本机号码校验）
 
 **请求示例代码：**
 
@@ -257,7 +255,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 
 | 参数     | 类型                 | 说明                                                         |
 | -------- | -------------------- | ------------------------------------------------------------ |
-| authVC   | UAAuthViewController | 显式登录：继承或直接使用UAAuthViewController类构建一个vc；<br> 隐式登录：传nil即可 |
+| authVC   | UAAuthViewController | 显式登录：继承或直接使用UAAuthViewController类构建一个vc；</br> 隐式登录：传nil即可 |
 | complete | Block                | 登录回调                                                     |
 
 **响应参数**
@@ -266,12 +264,10 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | ---------- | -------- | ------------------------------------------------------------ |
 | resultCode | NSString | 返回相应的结果码                                             |
 | token      | NSString | 成功时返回：临时凭证，token有效期2min，一次有效，同一用户（手机号）10分钟内获取token且未使用的数量不超过30个 |
-| openId     | NSString | 成功时返回：用户身份唯一标识 ,**隐式登录不返回openId字段**   |
+| openId     | NSString | 成功时返回：用户身份唯一标识 ,**authVC传nil时不返回openId字段** |
 | desc       | NSString | 返回描述                                                     |
 
-
-
-##2.6. 获取手机号码（服务端）
+## 2.6. 获取手机号码（服务端）
 
 开发者获取token后，需要将token传递到应用服务器，由应用服务器发起获取用户手机号接口的调用。
 
@@ -290,172 +286,45 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 
 请求方法： POST+json,Content-type设置为application/json
 
-**请求示例代码：**
-
-```
-{
-    appid = 10000001;
-    msgid = 34a5588136d6404784831609cdcdc633;
-    sign = 2240b9213b9b8dccfe7f6257a21071cf;
-    strictcheck = 0;
-    systemtime = 20180529112443243;
-    token = STsid00000015275642798949tUyg6KsmyEWKk005bCfuxUmCXeqeFRK;
-    version = "2.0";
-}
-
-```
-
-**参数说明**
-
-| 参数                | 约束 | 说明                                                         |
-| :------------------ | :--: | :----------------------------------------------------------- |
-| version             | 必选 | 填2.0                                                        |
-| msgid               | 必选 | 标识请求的随机数即可(1-36位)                                 |
-| systemtime          | 必选 | 请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
-| strictcheck         | 必选 | 暂时填写"0"                                                  |
-| appid               | 必选 | 业务在统一认证申请的应用id                                   |
-| expandparams        | 可选 | 扩展参数                                                     |
-| token               | 必选 | 需要解析的凭证值。                                           |
-| sign                | 必选 | 当**encryptionalgorithm≠"RSA"**时，sign = MD5（appid + version + msgid + systemtime + strictcheck + token + appkey)（注：“+”号为合并意思，不包含在被加密的字符串中），输出32位大写字母；</br>当**encryptionalgorithm="RSA"**，业务端RSA私钥签名（appid+token）, 服务端使用业务端提供的公钥验证签名（公钥可以在开发者社区配置）。 |
-| encryptionalgorithm | 可选 | 推荐使用。开发者如果需要使用非对称加密算法时，填写“RSA”。（当该值不设置为“RSA”时，执行MD5签名校验） |
-
-**返回说明**
-
-| 参数         | 类型   | 说明                                                         |
-| ------------ | ------ | ------------------------------------------------------------ |
-| inresponseto | string | 对应的请求消息中的msgid                                      |
-| systemtime   | string | 响应消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
-| resultcode   | string | 返回码                                                       |
-| msisdn       | string | 表示手机号码，如果加密方式为RSA，应用需要用私钥进行解密      |
-
-<div STYLE="page-break-after: always;"></div>
-
-# 3. 本机号码校验功能
-
-## 3.1. 准备工作
-
-在中国移动开发者社区进行以下操作：
-
-1. 获得appid和appkey；
-2. 勾选一键登录能力；
-3. 配置应用服务器的出口ip地址；
-4. 订购本机号码校验服务
-
-## 3.2. 流程说明
-
-移动认证本机号码校验用于校验用户当前输入的手机号码是否为本机号码。
-
-整体流程为：
-
-1. 开发者调用取号方法，取号成功后，SDK将缓存取号临时凭证scrip；
-2. 调用授权登录方法，获取接口凭证token；
-3. 开发者使用本机号码校验的交互页面；
-4. 携带token和手机号码信息进行接口调用，获取手机号码校验结果。
-
-本机号码校验整体流程：
-
-![](image/verify_process.png)
-
-## 3.3. 预取号
-
-在用户正式授权给开发者使用本机号码登录前，开发者可以提前调取预取号方法，获知当前用户的终端状态和网络环境是否可以从网关获取号码。
-
-为了保证SDK取号成功率，开发者在取号前必须保证：
-
-1. 运营商目前只支持中国移动2/3/4G和中国电信4G，开发者在调用取号方法前，可以预先判断当前用户的运营商类型和网络制式，仅针对SDK目前支持的运营商和网络制式使用一键登录功能。
-2. 受运营商取号原理的限制，网关取号必须在**数据流量打开且用户授权应用使用蜂窝数据网络**的情况下进行，因此，用户如果关闭数据流量，将无法成功取号。
-
-**请求示例代码**
-
-```objective-c
-[UASDKLogin.shareLogin getPhoneNumberCompletion: ^ (NSDictionary * _Nonnull sender) {
-        if ([sender[@ "resultCode"] isEqualToString: @"103000"]) {
-            NSLog(@ "取号成功:%@", sender);
-        } else {
-            NSLog(@ "取号失败:%@", sender);
-        }
-    }];
-```
-
-**取号方法原型：**
-
-```objective-c
-- (void)getPhoneNumberCompletion:(void (^)(NSDictionary * sender))completion;
-```
-
 **参数说明：**
 
-| 参数       | 类型           | 说明                                       |
-| ---------- | -------------- | ------------------------------------------ |
-| duration   | NSTimeInterval | 自定义取号超时时间（默认8000毫秒），单位： |
-| completion | Block          | 取号回调                                   |
+1、json形式的报文交互必须是标准的json格式
 
-**返回说明：**
+2、发送时请设置content type为 application/json
 
-| 参数          | 类型     | 说明                          |
-| ------------- | -------- | ----------------------------- |
-| resultCode    | NSString | 返回相应的结果码              |
-| desc          | NSString | 调用描述                      |
-| securityphone | NSString | 手机号码掩码，如“138XXXX0000” |
-
-## 3.4. 授权并获取接口凭证
-
-用户调用授权方法，获取取号token
-
-在调用授权登录方法时，**将authVC对象传入值设为nil即可**。
-
-**请求示例代码：**
-
-```objective-c
--(void)loginImplicity {
-    [UASDKLogin.shareLogin getAuthorizationWithAuthViewController:nil completion:^(NSDictionary * _Nonnull sender) {
-                if ([sender[@"resultCode"] isEqualToString:@"103000"]) {
-                    NSLog(@"隐式登录成功:%@",sender);
-                }else{
-                    NSLog(@"隐式登录失败:%@",sender);
-                }
-                }];
-}
-```
-
-**授权方法原型：**
-
-```java
-- (void)getAuthorizationWithAuthViewController:(UAAuthViewController *_Nullable)authVC completion:(void (^)(NSDictionary *sender))completion;
-```
-
-**参数说明：**
+3、参数类型都是String
 
 **请求参数**
 
-| 参数     | 类型                 | 说明                                                         |
-| -------- | -------------------- | ------------------------------------------------------------ |
-| authVC   | UAAuthViewController | 开发者构建的授权页控制器。当authVC传值为nil时，获取的token用于本机号码校验 |
-| complete | Block                | 登录回调                                                     |
+| 参数                | 是否必填 | 说明                                                         |
+| :------------------ | :------: | :----------------------------------------------------------- |
+| version             |    是    | 填2.0                                                        |
+| msgid               |    是    | 标识请求的随机数即可(1-36位)                                 |
+| systemtime          |    是    | 请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
+| strictcheck         |    是    | 暂时填写"0"，填写“1”时，将对服务器IP白名单进行强校验（后续将强制要求IP强校验） |
+| appid               |    是    | 业务在统一认证申请的应用id                                   |
+| expandparams        |    否    | 扩展参数                                                     |
+| token               |    是    | 需要解析的凭证值。                                           |
+| sign                |    是    | 当**encryptionalgorithm≠"RSA"**时，sign = MD5(appid + version + msgid + systemtime + strictcheck + token + appkey)（注：“+”号为合并意思，不包含在被加密的字符串中），输出32位大写字母；</br>当**encryptionalgorithm="RSA"**，业务端RSA私钥签名（appid+token）, 服务端使用业务端提供的公钥验证签名（公钥可以在开发者社区配置）。 |
+| encryptionalgorithm |    否    | 推荐使用。开发者如果需要使用非对称加密算法时，填写“RSA”。（当该值不设置为“RSA”时，执行MD5签名校验） |
 
 **响应参数**
 
-| 参数       | 类型     | 说明                                                         |
-| ---------- | -------- | ------------------------------------------------------------ |
-| resultCode | NSString | 返回相应的结果码                                             |
-| token      | NSString | 成功时返回：临时凭证，token有效期2min，一次有效，同一用户（手机号）10分钟内获取token且未使用的数量不超过30个 |
-| openId     | NSString | 成功时返回：用户身份唯一标识 ,**隐式登录不返回openId字段**   |
-| desc       | NSString | 返回描述                                                     |
+| 参数         | 说明                                                         |
+| ------------ | ------------------------------------------------------------ |
+| inresponseto | 对应的请求消息中的msgid                                      |
+| systemtime   | 响应消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
+| resultcode   | 返回码                                                       |
+| msisdn       | 表示手机号码，如果加密方式为RSA，应用需要用私钥进行解密      |
 
-
-
-## 3.5. 客户端交互页面设计
-
-开发者在本机号码校验的使用场景（页面），引导提示用户输入本机号码，将手机号码和3.4中获取的接口凭证token传回应用服务器。
-
-## 3.6. 本机号码校验（服务端）
+## 2.7. 本机号码校验（服务端）
 
 开发者获取token后，需要将token传递到应用服务器，由应用服务器发起本机号码校验接口的调用。
 
 调用本接口，必须保证：
 
-1. token在有效期内（2分钟）。
-2. token还未使用过。
+1. token在有效期内（2分钟）
+2. token还未使用过
 3. 应用服务器出口IP地址在开发者社区中配置正确。
 
 对于本机号码校验，需要注意：
@@ -470,6 +339,48 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 协议： HTTPS
 
 请求方法： POST+json,Content-type设置为application/json
+
+**参数说明：**
+
+1、json形式的报文交互必须是标准的json格式
+
+2、发送时请设置content type为 application/json
+
+3、参数类型都是String
+
+**请求参数**
+
+| 参数          | 层级  | 是否必填                     | 说明                                                         |
+| ------------- | ----- | ---------------------------- | ------------------------------------------------------------ |
+| **header**    | **1** | 是                           |                                                              |
+| version       | 2     | 是                           | 版本号,初始版本号1.0,有升级后续调整                          |
+| msgId         | 2     | 是                           | 使用UUID标识请求的唯一性                                     |
+| timestamp     | 2     | 是                           | 请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
+| appId         | 2     | 是                           | 应用ID                                                       |
+| **body**      | **1** | 是                           |                                                              |
+| openType      | 2     | 否，requestertype字段为0时是 | 运营商类型：</br>1:移动;</br>2:联通;</br>3:电信;</br>0:未知  |
+| requesterType | 2     | 是                           | 请求方类型：</br>0:APP；</br>1:WAP                           |
+| message       | 2     | 否                           | 接入方预留参数，该参数会透传给通知接口，此参数需urlencode编码 |
+| expandParams  | 2     | 否                           | 扩展参数格式：param1=value1\|param2=value2  方式传递，参数以竖线 \| 间隔方式传递，此参数需urlencode编码。 |
+| keyType       | 2     | 否                           | 手机号码加密方式：</br>0:默认phonenum采用sha256加密，sign采用HMACSHA256算法</br>1:RSA加密（暂未支持）</br>（注：keyType=1时，phonenum和sign均使用RSA，keyType不填或非1、0时按keyType=0处理） |
+| phoneNum      | 2     | 是                           | 待校验的手机号码的64位sha256值，字母大写。（手机号码 + appKey + timestamp， “+”号为合并意思）（注：建议开发者对用户输入的手机号码的格式进行校验，增加校验通过的概率） |
+| token         | 2     | 是                           | 身份标识，字符串形式的token                                  |
+| sign          | 2     | 是                           | 签名，HMACSHA256( appId + msgId + phonNum + timestamp + token + version)，输出64位大写字母 （注：“+”号为合并意思，不包含在被加密的字符串中，appkey为秘钥, 参数名做自然排序（Java是用TreeMap进行的自然排序）） |
+
+**响应参数**
+
+| 参数         | 层级  | 说明                                                         |
+| ------------ | ----- | :----------------------------------------------------------- |
+| **header**   | **1** |                                                              |
+| msgId        | 2     | 对应的请求消息中的msgid                                      |
+| timestamp    | 2     | 响应消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
+| appId        | 2     | 应用ID                                                       |
+| resultCode   | 2     | 平台返回码                                                   |
+| **body**     | **1** |                                                              |
+| resultDesc   | 2     | 平台返回码                                                   |
+| message      | 2     | 接入方预留参数，该参数会透传给通知接口，此参数需urlencode编码 |
+| accessToken  | 2     | 使用短验辅助服务的凭证，当resultCode返回为001时，并且该appid在开发者社区配置了短验辅助功能时返回该参数。accessToken有效时间为5min，一次有效。 |
+| expandParams | 2     | 扩展参数格式：param1=value1\|param2=value2  方式传递，参数以竖线 \| 间隔方式传递，此参数需urlencode编码。 |
 
 **请求示例代码：**
 
@@ -491,45 +402,15 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 }
 ```
 
-**参数说明：**
-
-| 参数          | 层级  | 约束                         | 说明                                                         |
-| ------------- | ----- | ---------------------------- | ------------------------------------------------------------ |
-| **header**    | **1** | 必选                         |                                                              |
-| version       | 2     | 必选                         | 版本号,初始版本号1.0,有升级后续调整                          |
-| msgId         | 2     | 必选                         | 使用UUID标识请求的唯一性                                     |
-| timestamp     | 2     | 必选                         | 请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
-| appId         | 2     | 必选                         | 应用ID                                                       |
-| **body**      | **1** | 必选                         |                                                              |
-| openType      | 2     | 否，requestertype字段为0时是 | 运营商类型：</br>1:移动;</br>2:联通;</br>3:电信;</br>0:未知  |
-| requesterType | 2     | 是                           | 请求方类型：</br>0:APP；</br>1:WAP                           |
-| message       | 2     | 否                           | 接入方预留参数，该参数会透传给通知接口，此参数需urlencode编码 |
-| expandParams  | 2     | 否                           | 扩展参数格式：param1=value1\|param2=value2  方式传递，参数以竖线 \| 间隔方式传递，此参数需urlencode编码。 |
-| phoneNum      | 2     | 是                           | 待校验的手机号码的64位sha256值，字母大写。（手机号码 + appKey + timestamp， “+”号为合并意思）（注：建议开发者对用户输入的手机号码的格式进行校验，增加校验通过的概率） |
-| token         | 2     | 是                           | 身份标识，字符串形式的token                                  |
-| sign          | 2     | 是                           | 签名，HMACSHA256( appId +     msgId + phonNum + timestamp + token + version)，输出64位大写字母 （注：“+”号为合并意思，不包含在被加密的字符串中,appkey为秘钥, 参数名做自然排序（Java是用TreeMap进行的自然排序）） |
-
-**返回说明：**
-
-| 参数         | 层级  | 类型   | 说明                                                         |
-| ------------ | ----- | :----- | :----------------------------------------------------------- |
-| **header**   | **1** |        |                                                              |
-| msgId        | 2     | string | 对应的请求消息中的msgid                                      |
-| timestamp    | 2     | string | 响应消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
-| appId        | 2     | string | 应用ID                                                       |
-| resultCode   | 2     | string | 平台返回码                                                   |
-| **body**     | **1** |        |                                                              |
-| resultDesc   | 2     | String | 平台返回码                                                   |
-| message      | 2     | String | 接入方预留参数，该参数会透传给通知接口，此参数需urlencode编码 |
-| expandParams | 2     | String | 扩展参数格式：param1=value1\|param2=value2  方式传递，参数以竖线 \| 间隔方式传递，此参数需urlencode编码。 |
+<div STYLE="page-break-after: always;"></div>
 
 <div STYLE="page-break-after: always;"></div>
 
-# 4. SDK方法说明
+# 3. SDK方法说明
 
-## 4.1. 初始化
+## 3.1. 初始化
 
-### 4.1.1. 方法描述
+### 3.1.1. 方法描述
 
 **功能**
 
@@ -543,7 +424,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 
 </br>
 
-### 4.1.2. 参数说明
+### 3.1.2. 参数说明
 
 **请求参数**
 
@@ -556,15 +437,13 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 
 无
 
-## 4.2. 取号
+## 3.2. 取号请求
 
-### 4.2.1. 方法描述
+### 3.2.1. 方法描述
 
 **功能**
 
-本方法用于发起取号请求，并缓存本次取号凭证scrip在内存中，有效期60分钟，应用内存被清空时，scrip也会一并失效。SDK将在后台完成网络判断、数据网络切换等内部操作并向网关请求申请获取用户本机号码。取号请求成功后，开发者就可以调用并弹出由开发者自定义布局的授权页面。另外，开发者可以调用删除凭证方法`deleteScrip`提前让凭证失效。
-
-**注：**在调用授权登录方法`getAuthorization`时，必须要保证scrip有效，否则会取号失败
+本方法用于发起取号请求，SDK完成网络判断、蜂窝数据网络切换等操作并缓存凭证scrip。
 
 **原型**
 
@@ -573,7 +452,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 		(void (^)(NSDictionary * sender))completion;
 ```
 
-### 4.2.2. 参数说明
+### 3.2.2. 参数说明
 
 **请求参数**
 
@@ -589,7 +468,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | desc          | NSString | 调用描述                      |
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000” |
 
-### 4.2.3. 示例
+### 3.2.3. 示例
 
 **请求示例代码**
 
@@ -613,15 +492,13 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 }
 ```
 
-## 4.3. 授权登录
+## 3.3. 授权请求
 
-### 4.3.1. 方法描述
+### 3.3.1. 方法描述
 
 **功能**
 
 在应用弹出授权页的情况下，调用本方法可以成功获取取号凭证token。如果开发者需要**获取用户完整的手机号码**，调用该方法时，需要将正在运行的授权控制器传入并获取相对应的token；如果开发者需要做**本机号码校验**，调用该方法时，authVC参数传nil即可。
-
-**注：**在调用授权登录方法前，必须先调用取号方法且保证scrip有效，否则会取号失败！建议开发者在调用本方法前，再一次调用取号方法`getPhoneNumber`，确保scrip有效（如果scrip还在有效期内，再次调用`getPhoneNumber`方法耗时非常小，大概10-30ms）
 
 **原型**
 
@@ -631,7 +508,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 		(void (^)(NSDictionary *sender))completion;
 ```
 
-### 4.3.2. 参数说明
+### 3.3.2. 参数说明
 
 **请求参数**
 
@@ -646,10 +523,10 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | ---------- | -------- | ------------------------------------------------------------ | ---------- |
 | resultCode | NSString | 返回相应的结果码                                             | 是         |
 | token      | NSString | 成功时返回：临时凭证，token有效期2min，一次有效，同一用户（手机号）10分钟内获取token且未使用的数量不超过30个 | 成功时必填 |
-| openId     | NSString | 成功时返回：用户身份唯一标识 ,**隐式登录不返回openId字段**   | 成功时必填 |
+| openId     | NSString | 成功时返回：用户身份唯一标识 ,**当authVC传值为nil时，不返回openId字段** | 成功时必填 |
 | desc       | NSString | 调用描述                                                     | 否         |
 
-### 4.3.3. 示例
+### 3.3.3. 示例
 
 **完整一键登录调用示例**
 
@@ -698,9 +575,9 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 }
 ```
 
-## 4.4. 获取网络状态和运营商类型
+## 3.4. 获取网络状态和运营商类型
 
-### 4.4.1. 方法描述
+### 3.4.1. 方法描述
 
 **功能：**
 
@@ -712,7 +589,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 @property (nonatomic,readonly) NSDictionary<NSString *, NSNumber *> *networkType;
 ```
 
-### 4.4.2. 参数说明
+### 3.4.2. 参数说明
 
 **请求参数**
 
@@ -725,9 +602,9 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | networkType | NSNumber | 0.无网络;</br>1.数据流量;</br>2.wifi;</br>3.数据+wifi  |
 | carrier     | NSNumber | 0.获取不到运营商时，该值代表移动;</br>1.中国移动;</br>2.中国联通;</br>3.中国电信 |
 
-## 4.5. 删除临时取号凭证
+## 3.5. 删除临时取号凭证
 
-### 4.5.1. 方法描述
+### 3.5.1. 方法描述
 
 **功能**
 
@@ -739,7 +616,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 - (BOOL)delectScrip;
 ```
 
-### 4.5.2. 参数说明
+### 3.5.2. 参数说明
 
 **请求参数**
 
@@ -753,13 +630,13 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 
 <div STYLE="page-break-after: always;"></div>
 
-# 5. 服务端接口说明
+# 4. 服务端接口说明
 
-## 5.1. 获取手机号码接口
+## 4.1. 获取手机号码接口
 
 业务平台或服务端携带用户授权成功后的token来调用认证服务端获取用户手机号码等信息。
 
-### 5.1.1. 接口说明
+### 4.1.1. 接口说明
 
 **请求地址：**https://www.cmpassport.com/unisdk/rsapi/loginTokenValidate
 
@@ -771,36 +648,38 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 
 </br>
 
-### 5.1.2. 参数说明
+### 4.1.2. 参数说明
+
+1、json形式的报文交互必须是标准的json格式
+
+2、发送时请设置content type为 application/json
+
+3、参数类型都是String
 
 **请求参数**
 
-| 参数                  |   类型   |  约束  | 说明                                       |
-| :------------------ | :----: | :--: | :--------------------------------------- |
-| version             | string |  必选  | 填2.0                                     |
-| msgid               | string |  必选  | 标识请求的随机数即可(1-36位)                        |
-| systemtime          | string |  必选  | 请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
-| strictcheck         | string |  必选  | 暂时填写"0"                                  |
-| appid               | string |  必选  | 业务在统一认证申请的应用id                           |
-| expandparams        | string |  可选  | 扩展参数                                     |
-| token               | string |  必选  | 需要解析的凭证值。                                |
-| sign                | string |  必选  | 当**encryptionalgorithm≠"RSA"**时，sign = MD5（appid + version + msgid + systemtime + strictcheck + token + appkey)（注：“+”号为合并意思，不包含在被加密的字符串中），输出32位大写字母；</br>当**encryptionalgorithm="RSA"**，业务端RSA私钥签名（appid+token）, 服务端使用业务端提供的公钥验证签名（公钥可以在开发者社区配置）。 |
-| encryptionalgorithm | string |  可选  | 开发者如果需要使用非对称加密算法时，填写“RSA”。（当该值不设置为“RSA”时，执行MD5签名校验） |
-
-</br>
+| 参数                | 是否必填 | 说明                                                         |
+| :------------------ | :------: | :----------------------------------------------------------- |
+| version             |    是    | 填2.0                                                        |
+| msgid               |    是    | 标识请求的随机数即可(1-36位)                                 |
+| systemtime          |    是    | 请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
+| strictcheck         |    是    | 暂时填写"0"，填写“1”时，将对服务器IP白名单进行强校验（后续将强制要求IP强校验） |
+| appid               |    是    | 业务在统一认证申请的应用id                                   |
+| expandparams        |    否    | 扩展参数                                                     |
+| token               |    是    | 需要解析的凭证值。                                           |
+| sign                |    是    | 当**encryptionalgorithm≠"RSA"**时，sign = MD5(appid + version + msgid + systemtime + strictcheck + token + appkey)（注：“+”号为合并意思，不包含在被加密的字符串中），输出32位大写字母；</br>当**encryptionalgorithm="RSA"**，业务端RSA私钥签名(appid+token), 服务端使用业务端提供的公钥验证签名（公钥可以在开发者社区配置）。 |
+| encryptionalgorithm |    否    | 推荐使用。开发者如果需要使用非对称加密算法时，填写“RSA”。（当该值不设置为“RSA”时，执行MD5签名校验） |
 
 **响应参数**
 
-| 参数         | 类型   | 约束 | 说明                                                         |
-| ------------ | ------ | ---- | ------------------------------------------------------------ |
-| inresponseto | string | 必选 | 对应的请求消息中的msgid                                      |
-| systemtime   | string | 必选 | 响应消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
-| resultcode   | string | 必选 | 返回码                                                       |
-| msisdn       | string | 必选 | 表示手机号码，如果加密方式为RSA，应用需要用私钥进行解密      |
+| 参数         | 说明                                                         |
+| ------------ | ------------------------------------------------------------ |
+| inresponseto | 对应的请求消息中的msgid                                      |
+| systemtime   | 响应消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
+| resultcode   | 返回码                                                       |
+| msisdn       | 表示手机号码，如果加密方式为RSA，应用需要用私钥进行解密      |
 
-</br>
-
-### 5.1.3. 示例
+### 4.1.3. 示例
 
 **请求示例**
 
@@ -827,63 +706,72 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 }
 ```
 
-<div STYLE="page-break-after: always;"></div>
+## 4.2. 本机号码校验
 
-## 5.2. 本机号码校验接口
+开发者获取token后，需要将token传递到应用服务器，由应用服务器发起本机号码校验接口的调用。
 
-校验用户输入的号码是否本机号码。
-应用将手机号码传给移动认证SDK，移动认证SDK向认证服务端发起本机号码校验请求，认证服务端通过网关获取本机手机号码和第三方应用传输的手机号码进行校验，返回校验结果。
+调用本接口，必须保证：
 
-### 5.2.1. 接口说明
+1. token在有效期内（2分钟）
+2. token还未使用过
+3. 应用服务器出口IP地址在开发者社区中配置正确。
 
-**调用次数说明：**本产品属于收费业务，开发者未签订服务合同前，每天总调用次数有限，详情可咨询商务。
+对于本机号码校验，需要注意：
 
-**请求地址：** https://www.cmpassport.com/openapi/rs/tokenValidate
+1. 本产品属于收费业务，开发者未签订服务合同前，每天总调用次数有限，详情可咨询商务。
+2. 签订合同后，将不在提供每天免费的测试次数。
 
-**协议：** HTTPS
+### 4.2.1. 接口说明
 
-**请求方法：** POST+json,Content-type设置为application/json
+请求地址： https://www.cmpassport.com/openapi/rs/tokenValidate
 
-**回调地址：**请参考开发者接入流程文档
+协议： HTTPS
 
-### 5.2.2.  参数说明
+请求方法： POST+json,Content-type设置为application/json
+
+### 4.2.2. 参数说明
+
+1、json形式的报文交互必须是标准的json格式
+
+2、发送时请设置content type为 application/json
+
+3、参数类型都是String
 
 **请求参数**
 
-| 参数            | 类型     | 层级    | 约束                    | 说明                                       |
-| ------------- | ------ | ----- | --------------------- | ---------------------------------------- |
-| **header**    |        | **1** | 必选                    |                                          |
-| version       | string | 2     | 必选                    | 版本号,初始版本号1.0,有升级后续调整                     |
-| msgId         | string | 2     | 必选                    | 使用UUID标识请求的唯一性                           |
-| timestamp     | string | 2     | 必选                    | 请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
-| appId         | string | 2     | 必选                    | 应用ID                                     |
-| **body**      |        | **1** | 必选                    |                                          |
-| openType      | String | 2     | 否，requestertype字段为0时是 | 运营商类型：</br>1:移动;</br>2:联通;</br>3:电信;</br>0:未知 |
-| requesterType | String | 2     | 是                     | 请求方类型：</br>0:APP；</br>1:WAP              |
-| message       | String | 2     | 否                     | 接入方预留参数，该参数会透传给通知接口，此参数需urlencode编码      |
-| expandParams  | String | 2     | 否                     | 扩展参数格式：param1=value1\|param2=value2  方式传递，参数以竖线 \| 间隔方式传递，此参数需urlencode编码。 |
-| phoneNum      | String | 2     | 是                     | 待校验的手机号码的64位sha256值，字母大写。（手机号码 + appKey + timestamp， “+”号为合并意思）（注：建议开发者对用户输入的手机号码的格式进行校验，增加校验通过的概率） |
-| token         | String | 2     | 是                     | 身份标识，字符串形式的token                         |
-| sign          | String | 2     | 是                     | 签名，HMACSHA256( appId +     msgId + phonNum + timestamp + token + version)，输出64位大写字母 （注：“+”号为合并意思，不包含在被加密的字符串中,appkey为秘钥, 参数名做自然排序（Java是用TreeMap进行的自然排序）） |
-|               |        |       |                       |                                          |
+| 参数          | 层级  | 约束                         | 说明                                                         |
+| ------------- | ----- | ---------------------------- | ------------------------------------------------------------ |
+| **header**    | **1** | 必选                         |                                                              |
+| version       | 2     | 必选                         | 版本号,初始版本号1.0,有升级后续调整                          |
+| msgId         | 2     | 必选                         | 使用UUID标识请求的唯一性                                     |
+| timestamp     | 2     | 必选                         | 请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
+| appId         | 2     | 必选                         | 应用ID                                                       |
+| **body**      | **1** | 必选                         |                                                              |
+| openType      | 2     | 否，requestertype字段为0时是 | 运营商类型：</br>1:移动;</br>2:联通;</br>3:电信;</br>0:未知  |
+| requesterType | 2     | 必选                         | 请求方类型：</br>0:APP；</br>1:WAP                           |
+| message       | 2     | 否                           | 接入方预留参数，该参数会透传给通知接口，此参数需urlencode编码 |
+| expandParams  | 2     | 否                           | 扩展参数格式：param1=value1\|param2=value2  方式传递，参数以竖线 \| 间隔方式传递，此参数需urlencode编码。 |
+| keyType       | 2     | 否                           | 手机号码加密方式：</br>0:默认phonenum采用sha256加密，sign采用HMACSHA256算法</br>1:RSA加密（暂未支持）</br>（注：keyType=1时，phonenum和sign均使用RSA，keyType不填或非1、0时按keyType=0处理） |
+| phoneNum      | 2     | 必选                         | 待校验的手机号码的64位sha256值，字母大写。（手机号码 + appKey + timestamp， “+”号为合并意思）（注：建议开发者对用户输入的手机号码的格式进行校验，增加校验通过的概率） |
+| token         | 2     | 必选                         | 身份标识，字符串形式的token                                  |
+| sign          | 2     | 必选                         | 签名，HMACSHA256(appId + msgId + phonNum + timestamp + token + version)，输出64位大写字母 （注：“+”号为合并意思，不包含在被加密的字符串中,appkey为秘钥, 参数名做自然排序（Java是用TreeMap进行的自然排序）） |
 
 **响应参数**
 
-| 参数         | 层级  | 类型   | 约束 | 说明                                                         |
-| ------------ | ----- | :----- | :--- | :----------------------------------------------------------- |
-| **header**   | **1** |        | 必选 |                                                              |
-| msgId        | 2     | string | 必选 | 对应的请求消息中的msgid                                      |
-| timestamp    | 2     | string | 必选 | 响应消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
-| appId        | 2     | string | 必选 | 应用ID                                                       |
-| resultCode   | 2     | string | 必选 | 平台返回码                                                   |
-| **body**     | **1** |        | 必选 |                                                              |
-| resultDesc   | 2     | String | 必选 | 平台返回码                                                   |
-| message      | 2     | String | 否   | 接入方预留参数，该参数会透传给通知接口，此参数需urlencode编码 |
-| expandParams | 2     | String | 否   | 扩展参数格式：param1=value1\|param2=value2  方式传递，参数以竖线 \| 间隔方式传递，此参数需urlencode编码。 |
+| 参数         | 层级  | 约束 | 说明                                                         |
+| ------------ | ----- | :--- | :----------------------------------------------------------- |
+| **header**   | **1** | 必选 |                                                              |
+| msgId        | 2     | 必选 | 对应的请求消息中的msgid                                      |
+| timestamp    | 2     | 必选 | 响应消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165 |
+| appId        | 2     | 必选 | 应用ID                                                       |
+| resultCode   | 2     | 必选 | 平台返回码                                                   |
+| **body**     | **1** | 必选 |                                                              |
+| resultDesc   | 2     | 必选 | 平台返回码                                                   |
+| message      | 2     | 否   | 接入方预留参数，该参数会透传给通知接口，此参数需urlencode编码 |
+| accessToken  | 2     | 否   | 使用短验辅助服务的凭证，当resultCode返回为001时，并且该appid在开发者社区配置了短验辅助功能时返回该参数。accessToken有效时间为5min，一次有效。 |
+| expandParams | 2     | 否   | 扩展参数格式：param1=value1\|param2=value2  方式传递，参数以竖线 \| 间隔方式传递，此参数需urlencode编码。 |
 
-### 5.2.3. 示例
-
-**请求示例**
+### 4.2.3. 示例
 
 ```
 {
@@ -903,37 +791,39 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 }
 ```
 
-**响应示例**
-
-```
-{
-    body =     {
-        message = "";
-        resultDesc = "\U662f\U672c\U673a\U53f7\U7801";
-    };
-    header =     {
-        appId = 3000******76;
-        msgId = f11585580266414fbde9f755451fb7a7;
-        resultCode = 000;
-        timestamp = 20180129105523701;
-    };
-}
-```
-
 <div STYLE="page-break-after: always;"></div>
 
-# 6. 返回码说明
+# 5. 返回码说明
 
-##6.1. SDK返回码
+##5.1. SDK返回码
 
 使用SDK时，SDK会在认证结束后将结果回调给开发者，其中结果为JSONObject对象，其中resultCode为结果响应码，103000代表成功，其他为失败。成功时在根据token字段取出身份标识。失败时根据resultCode定位失败原因。
 
 | 错误编号      | 返回码描述                                         |
 | ------------- | -------------------------------------------------- |
-| 103000        | 成功                                               |
+| 103000 | 成功                                                         |
+| 102101 | 无网络                                                       |
+| 102102 | 网络异常                                                     |
+| 102103 | 未开启数据网络                                               |
+| 102203 | 接口入参错误                                                 |
+| 102508 | 数据网络切换失败                                             |
+| 103102 | 包签名错误                                                   |
+| 103111 | 网关IP错误（运营商误判）                                     |
+| 103119 | appid不存在                                                  |
+| 103211 | 其他错误                                                     |
+| 103412 | 无效的请求                                                   |
+| 103414 | 参数校验异常                                                 |
+| 103902 | scrip失效                                                    |
+| 103911 | token请求过于频繁，10分钟内获取token且未使用的数量不超过30个 |
+| 105001 | 联通取号失败                                                 |
+| 105002 | 移动取号失败                                                 |
+| 105003 | 电信取号失败                                                 |
+| 105021 | 已达当天取号限额                                             |
+| 105302 | appid不在白名单                                              |
 | 200021        | 数据解析异常                                       |
 | 200022        | 无网络                                             |
 | 200023        | 请求超时                                           |
+| 200025 | 系统未授权应用数据网络权限 |
 | 200027        | 未开启数据网络或蜂窝不稳定                                     |
 | 200028        | 网络请求出错                                       |
 | 200030        | 没有进行初始化APPId、APPKey参数                    |
@@ -951,69 +841,29 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | 200056        | Socket发送请求超时                              |
 | 200057        | Socket发送请求出错                            |
 | 200058        | Socket读取数据流出错，具体原因请查看返回描述               |
+| 200059 | Socket主机解析失败 |
 | 200064        | SDK无法提供描述的未知错误                                    |
 
 </br>
 
-## 6.2. 获取手机号码接口返回码
+## 5.2. 获取手机号码接口返回码
 
-| 返回码 | 返回码描述                                                |
-| ------ | --------------------------------------------------------- |
-| 103000 | 返回成功                                                  |
-| 103101 | 签名错误                                                  |
-| 103102 | 包名/包签名/bundle ID错误                                 |
-| 103106 | 输入手机号不合法（短验）                                  |
-| 103107 | 已存在相同的随机数（短验）                                |
-| 103108 | 短信验证码错误                                            |
-| 103109 | 短信验证码超时                                            |
-| 103111 | wap网关IP错误                                             |
-| 103112 | 错误的请求                                                |
-| 103113 | token校验错误                                             |
-| 103119 | appid不合法                                               |
-| 103122 | btid不存在                                                |
-| 103125 | 手机号格式错误（短验）                                    |
-| 103127 | 证书验证：版本过期                                        |
-| 103133 | sourceid不合法                                            |
-| 103138 | appid已存在                                               |
-| 103139 | sourceid已存在                                            |
-| 103202 | 缓存用户不存在或者验证短信输入失败次数过多                |
-| 103203 | 缓存用户不存在（短信上行）                                |
-| 103204 | 缓存随机数不存                                            |
-| 103205 | 服务器异常                                                |
-| 103207 | 发送短信失败                                              |
-| 103211 | 其他错误                                                  |
-| 103214 | 访问缓存或数据库错误                                      |
-| 103401 | 消息签名为空                                              |
-| 103404 | 加密失败                                                  |
-| 103408 | 此sourceId注册已达上限99次                                |
-| 103409 | query参数为空                                             |
-| 103412 | 无效的请求                                                |
-| 103414 | 参数效验异常                                              |
-| 103505 | 重放攻击                                                  |
-| 103511 | 源IP不合法                                                |
-| 103810 | token校验失败，接口版本不一致                             |
-| 103811 | token为空                                                 |
-| 103901 | 短信验证码下发次数已达上限 (一分钟内最多5次,一天最多10次) |
-| 103902 | 临时取号凭证scrip校验失败                                 |
-| 103911 | 请求过于频繁（短信校验）                                  |
-| 103922 | 自动升级文件没找到                                        |
-| 104201 | token已经被校验过或者超时失效                             |
-| 104202 | 短信验证失败过多                                          |
-| 105001 | 联通网关取号失败                                          |
-| 105002 | 移动网关取号失败                                          |
-| 105003 | 电信网关取号失败                                          |
-| 105005 | 短信上行发送信息为空                                      |
-| 105007 | 手机号码格式错误（短信上行）                              |
-| 105008 | 短信内容为空（短信上行）                                  |
-| 105010 | script失效或者非法                                        |
-| 105011 | 参数加密的私钥失效或者非法                                |
-| 105012 | 不支持电信取号                                            |
-| 105013 | 不支持联通取号                                            |
-| 105018 | 用户权限不够                                              |
-| 105019 | 应用未授权（未勾选能力）                                  |
-| 105302 | AppId不在白名单                                           |
+| 返回码 | 返回码描述               |
+| ------ | ------------------------ |
+| 103000 | 返回成功                 |
+| 103101 | 签名错误                 |
+| 103113 | token内容错误            |
+| 103119 | appid不存在              |
+| 103133 | sourceid不合法           |
+| 103211 | 其他错误                 |
+| 103412 | 无效的请求               |
+| 103414 | 参数校验异常             |
+| 103811 | token为空                |
+| 104201 | token失效或不存在        |
+| 105018 | 用户权限不足             |
+| 105019 | 应用未授权（开发者社区） |
 
-## 6.3. 本机号码校验接口返回码
+## 5.3. 本机号码校验接口返回码
 
 本返回码表仅针对`本机号码校验接口`使用
 
@@ -1031,4 +881,3 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | 606    | 验证Token失败              |
 | 999    | 系统异常                   |
 | 102315 | 次数已用完                 |
-
