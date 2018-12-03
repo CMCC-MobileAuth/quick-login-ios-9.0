@@ -39,7 +39,6 @@ sdk技术问题沟通QQ群：609994083</br>
 1. xcode版本需使用9.0以上，否则会报错
 2. 导入认证SDK的framework，直接将移动认证`TYRZSDK.framework`拖到项目中
 3. 在Xcode中找到`TARGETS-->Build Setting-->Linking-->Other Linker Flags`在这选项中需要添加`-ObjC`
-4. 由于SDK取号是HTTP请求，因此需要使用RSA公钥加密保证数据传递的安全性，请确保App的Main Bundle导入`key0.der`公钥证书。同时也确保info.plist文件的ATS的`Allow Arbitrary Loads`字段为`YES`
 
 
 **第三步：开始使用移动认证SDK**
