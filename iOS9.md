@@ -104,7 +104,7 @@ sdk技术问题沟通QQ群：609994083</br>
 ## 2.2. 流程说明 
 
 1. 应用发起取号请求，成功后，应用将得到手机号掩码，SDK将缓存取号临时凭证scrip。
-2. 开发者继承UAAuthViewController父类并创建授权页面控制器子类。
+2. 开发者按照要求（详见：**2.4章节**）构建授权页面。
 3. 用户授权同意后，应用发起授权请求，成功后，应用将得到换号凭证token。
 4. 携带token请求获取手机号码接口，获取用户的手机号码信息。
 
@@ -141,6 +141,8 @@ sdk技术问题沟通QQ群：609994083</br>
 | resultCode    | NSString | 返回相应的结果码              |
 | desc          | NSString | 调用描述                      |
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000” |
+| operatorType  | NSString | 运营商，如“中国移动”  |
+
 
 ## 2.4. 创建授权页
 
@@ -172,13 +174,13 @@ sdk技术问题沟通QQ群：609994083</br>
 
 ### 2.4.2. 构建授权页控制器
 
-授权登录页面由开发者设计和构建，在构建前，需继承SDK自有的控制器UAAuthViewController。
+授权登录页面由开发者按照规范设计和构建
 
-1.开发者继承SDK提供的模板父类UAAuthViewController创建自定义子类CustomAuthViewController，并在该子类中布局UI控件
+1.开发者创建自定义子类CustomAuthViewController，并在该子类中布局UI控件
 
 ```objective-c
 // CustomAuthViewController.h
-@interface CustomAuthViewController : UAAuthViewController
+@interface CustomAuthViewController : UIViewController
 
 @end
 
@@ -204,11 +206,6 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 
 用户调用授权方法，获取取号token
 
-token使用注意事项：
-
-1. 如果应用在创建授权页的环节继承SDK自有的控制器UAAuthViewController，本方法获取的token允许到移动认证的服务端换取用户手机号码信息（详见2.6 获取手机号码）
-2. 如果应用**未**在创建授权页的环节继承SDK自有的控制器UAAuthViewController，本方法获取的token只能用于做本机号码校验（详见2.7 本机号码校验）
-
 **请求示例代码：**
 
 ```objective-c
@@ -232,7 +229,7 @@ token使用注意事项：
 //3.授权登录按钮点击事件，调用授权方法
 -(void)authorizeLoginButtonClick{
     
-    [UASDKLogin.shareLogin getAuthorizationWithAuthViewController:weakSelf.authVC completion:^(NSDictionary * _Nonnull sender) {
+    [UASDKLogin.shareLogin getAuthorizationCompletion:^(NSDictionary * _Nonnull sender) {
         if ([sender[@"resultCode"] isEqualToString:@"103000"]) {
             NSLog(@"授权登录成功:%@",sender);
         } else {
@@ -248,7 +245,7 @@ token使用注意事项：
 **授权方法原型：**
 
 ```objective-c
-- (void)getAuthorizationWithAuthViewController:(UAAuthViewController *_Nullable)authVC completion:(void (^)(NSDictionary *sender))completion;
+- (void)getAuthorizationCompletion:(void (^)(NSDictionary *sender))completion;
 ```
 
 **参数说明：**
@@ -257,8 +254,7 @@ token使用注意事项：
 
 | 参数     | 类型                 | 说明                                                         |
 | -------- | -------------------- | ------------------------------------------------------------ |
-| authVC   | UAAuthViewController | 显式登录：继承或直接使用UAAuthViewController类构建一个vc；</br> 隐式登录：传nil即可 |
-| complete | Block                | 登录回调                                                     |
+| completion | Block                | 登录回调                                                     |
 
 **响应参数**
 
@@ -266,7 +262,7 @@ token使用注意事项：
 | ---------- | -------- | ------------------------------------------------------------ |
 | resultCode | NSString | 返回相应的结果码                                             |
 | token      | NSString | 成功时返回：临时凭证，token有效期2min，一次有效，同一用户（手机号）10分钟内获取token且未使用的数量不超过30个 |
-| openId     | NSString | 成功时返回：用户身份唯一标识 ,**authVC传nil时不返回openId字段** |
+| openId     | NSString | 成功时返回：用户身份唯一标识 |
 | desc       | NSString | 返回描述                                                     |
 
 ## 2.6. 获取手机号码（服务端）
@@ -328,6 +324,7 @@ token使用注意事项：
 | resultCode    | NSString | 返回相应的结果码              |
 | desc          | NSString | 调用描述                      |
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000” |
+| operatorType  | NSString | 运营商，如“中国移动”  |
 
 **请求示例代码**
 
@@ -345,21 +342,21 @@ token使用注意事项：
 
 ```
 {
-    "resultCode" = "103000";
-    "desc" = "success";
-    "securityphone" = "138XXXX0000"
+    "resultCode" : "103000",
+    "desc" : "success",
+    "securityPhone" : "138XXXX0000",
+    "operatorType" : "中国移动",
 }
 ```
 
 ## 3.3. 授权请求
 
-在应用弹出授权页的情况下，调用本方法可以成功获取取号凭证token。如果开发者需要**获取用户完整的手机号码**，调用该方法时，需要将正在运行的授权控制器传入并获取相对应的token；如果开发者需要做**本机号码校验**，调用该方法时，authVC参数传nil即可。
+SDK的一键登录接口，获取到的token可以在移动认证服务端获取完整手机号
 
 **原型**
 
 ```objective-c
-- (void)getAuthorizationWithAuthViewController:
-	(UAAuthViewController *_Nullable)authVC completion:
+- (void)getAuthorizationCompletion:
 		(void (^)(NSDictionary *sender))completion;
 ```
 
@@ -367,8 +364,7 @@ token使用注意事项：
 
 | 参数     | 类型                 | 说明                                                         |
 | -------- | -------------------- | ------------------------------------------------------------ |
-| authVC   | UAAuthViewController | 开发者构建的授权页控制器。**当authVC传值为nil时，将不弹出授权页，登录方式为隐式登录** |
-| complete | Block                | 登录回调                                                     |
+| completion | Block                | 登录回调                                                     |
 
 **响应参数**
 
@@ -376,7 +372,7 @@ token使用注意事项：
 | ---------- | -------- | ------------------------------------------------------------ | ---------- |
 | resultCode | NSString | 返回相应的结果码                                             | 是         |
 | token      | NSString | 成功时返回：临时凭证，token有效期2min，一次有效，同一用户（手机号）10分钟内获取token且未使用的数量不超过30个 | 成功时必填 |
-| openId     | NSString | 成功时返回：用户身份唯一标识 ,**当authVC传值为nil时，不返回openId字段** | 成功时必填 |
+| openId     | NSString | 成功时返回：用户身份唯一标识 | 成功时必填 |
 | desc       | NSString | 调用描述                                                     | 否         |
 
 **完整一键登录调用示例**
@@ -402,7 +398,7 @@ token使用注意事项：
 //3.授权登录按钮点击事件，调用授权方法
 -(void)authorizeLoginButtonClick{
     __weak typeof(self) weakSelf = self;
-    [UASDKLogin.shareLogin getAuthorizationWithAuthViewController:weakSelf.authVC completion:^(NSDictionary * _Nonnull sender) {
+    [UASDKLogin.shareLogin getAuthorizationCompletion:^(NSDictionary * _Nonnull sender) {
         if ([sender[@"resultCode"] isEqualToString:@"103000"]) {
             NSLog(@"授权登录成功:%@",sender);
         } else {
@@ -422,11 +418,43 @@ token使用注意事项：
     "openId" = "003JI1Jg1rmApSg6yG0ydUgLWZ4Bnx0rb4wtWLtyDRc0WAWoAUmE";
     "resultCode" = "103000";
     "desc" = ""
-    "token" = "84840100013202003A4E45564452444D794E7A6C474E45557A4F4441314D304E4340687474703A2F2F3132302E3139372E3233352E32373A383038302F72732F403032030004030DF69E040012383030313230313730383137313031343230FF0020C8C9629B915C41DC3C9528E5D5796BB1551F2A49F8FCF7B5BA23ED0F28A8FAE9";
+    "token" = "STsid0000001517196594066OHmZvPMBwn2MkFxwvWkV12JixwuZuyDU";
 }
 ```
 
-## 3.4. 获取网络状态和运营商类型
+## 3.4. 本机号码校验
+
+###3.4.1. 方法描述
+
+**功能：**
+该方法用于获取**本机号码校验校验token**，且该接口只能用于校验移动的手机号码，其它运营商一律返回**200080**返回码，并提示**本机号码校验仅支持移动号码**
+
+**原型：**
+
+```objective-c
+- (void)mobileAuthCompletion:(void (^)(NSDictionary *sender))completion;
+```
+
+###3.4.2. 参数说明
+
+**请求参数**
+
+| 参数     | 类型   | 说明  |
+| :-:     | :-:    | :-: |
+| completion | Block  | 请求回调  |
+
+**响应参数**
+
+| 参数 | 类型 | 说明 |
+| :-: | :-: | :-: |
+| resultCode | NSString | 返回码 |
+| desc | NSString | 描述 |
+| token | NSString | 本机号码校验token |
+
+
+
+
+## 3.5. 获取网络状态和运营商类型
 
 本方法用于获取用户当前上网卡的网络环境和运营商
 
@@ -443,7 +471,7 @@ token使用注意事项：
 | networkType | NSNumber | 0.无网络;</br>1.数据流量;</br>2.wifi;</br>3.数据+wifi  |
 | carrier     | NSNumber | 0.获取不到运营商时，该值代表移动;</br>1.中国移动;</br>2.中国联通;</br>3.中国电信 |
 
-## 3.5. 删除临时取号凭证
+## 3.6. 删除临时取号凭证
 
 本方法用于删除取号方法`getPhoneNumberCompletion`成功后返回的取号凭证scrip
 
@@ -457,7 +485,7 @@ token使用注意事项：
 
 | 参数  | 类型 | 说明                                          |
 | ----- | ---- | --------------------------------------------- |
-| state | BOOL | 删除结果状态，（YES：删除成功，NO：删除失败） |
+| state | BOOL | 删除结果状态，（YES：有缓存，已执行删除，NO：无缓存，不执行删除） |
 
 <div STYLE="page-break-after: always;"></div>
 
@@ -467,47 +495,17 @@ token使用注意事项：
 
 使用SDK时，SDK会在认证结束后将结果回调给开发者，其中结果为JSONObject对象，其中resultCode为结果响应码，103000代表成功，其他为失败。成功时在根据token字段取出身份标识。失败时根据resultCode定位失败原因。
 
-| 错误编号      | 返回码描述                                         |
-| ------------- | -------------------------------------------------- |
-| 103000 | 成功                                                         |
-| 102101 | 无网络                                                       |
-| 102102 | 网络异常                                                     |
-| 102103 | 未开启数据网络                                               |
-| 102203 | 接口入参错误                                                 |
-| 102508 | 数据网络切换失败                                             |
-| 103102 | 包签名错误                                                   |
-| 103111 | 网关IP错误（运营商误判）                                     |
-| 103119 | appid不存在                                                  |
-| 103211 | 其他错误                                                     |
-| 103412 | 无效的请求                                                   |
-| 103414 | 参数校验异常                                                 |
-| 103902 | scrip失效                                                    |
-| 103911 | token请求过于频繁，10分钟内获取token且未使用的数量不超过30个 |
-| 105001 | 联通取号失败                                                 |
-| 105002 | 移动取号失败                                                 |
-| 105003 | 电信取号失败                                                 |
-| 105021 | 已达当天取号限额                                             |
-| 105302 | appid不在白名单                                              |
-| 200021        | 数据解析异常                                       |
-| 200022        | 无网络                                             |
-| 200023        | 请求超时                                           |
-| 200025 | 系统未授权应用数据网络权限 |
-| 200027        | 未开启数据网络或蜂窝不稳定                                     |
-| 200028        | 网络请求出错                                       |
-| 200030        | 没有进行初始化APPId、APPKey参数                    |
-| 200038        | 非移动网关重定向失败                                     |
-| 200042        | 授权页的类型错误                                |
-| 200047        | 网络异常                                     |
-| 200048        | 用户未安装sim卡                                 |
-| 200049        | 授权登录失败                                           |
-| 200050        | Socket数据流字节为0，请求无响应消息                             |
-| 200051        | Socket读取蜂窝端口失败                                     |
-| 200052        | Socket设置蜂窝端口失败                        |
-| 200053        | Socket基于蜂窝发起的连接失败                     |
-| 200054        | RunLoop对Socket事件处理已超时                  |
-| 200055        | Socket在RunLoop触发连接失败                     |
-| 200056        | Socket发送请求超时                              |
-| 200057        | Socket发送请求出错                            |
-| 200058        | Socket读取数据流出错，具体原因请查看返回描述               |
-| 200059 | Socket主机解析失败 |
-| 200064        | SDK无法提供描述的未知错误                                    |
+| 错误编号      | 返回码描述                       |
+| ------------- | ------------------------------|
+| 103000        | 成功                           |
+| 200022        | 无网络                         |
+| 200023        | 请求超时                       |
+| 200025        | 未知错误，一般配合描述分析        |                
+| 200027        | 未开启数据网络或蜂窝不稳定        |
+| 200036        | 取号失败                       |                    
+| 200038        | 非移动网关重定向失败             |
+| 200048        | 用户未安装sim卡                |
+| 200050        | Socket创建失败或发送接收数据错误   |
+| 200064        | 异常数据                    |
+| 200072       |CA根证书认证失败         |
+| 200080       |本机号码校验仅支持移动号码 |
