@@ -329,7 +329,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 **请求示例代码**
 
 ```objective-c
- [UASDKLogin.shareLogin getPhoneNumberWithTimeout: 8000 completion: ^ (NSDictionary * _Nonnull sender) {
+ [UASDKLogin.shareLogin getPhoneNumberCompletion: ^ (NSDictionary * _Nonnull sender) {
         if ([sender[@ "resultCode"] isEqualToString: @"103000"]) {
             NSLog(@ "取号成功:%@", sender);
         } else {
@@ -383,7 +383,7 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 //2.调用取号方法（根据实际需求，也可以放在构建授权页控制前调用）
 -(void)getPhonenumber{
     __weak typeof(self) weakSelf = self;
-    [UASDKLogin.shareLogin getPhoneumberCompletion:^(NSDictionary * _Nonnull sender){
+    [UASDKLogin.shareLogin getPhoneNumberCompletion:^(NSDictionary * _Nonnull sender){
         if ([sender[@"resultCode"] isEqualToString:@"103000"]) {
             NSLog(@"取号成功:%@",sender);
             // 显示手机号码掩码
