@@ -262,7 +262,6 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | ---------- | -------- | ------------------------------------------------------------ |
 | resultCode | NSString | 返回相应的结果码                                             |
 | token      | NSString | 成功时返回：临时凭证，token有效期2min，一次有效，同一用户（手机号）10分钟内获取token且未使用的数量不超过30个 |
-| openId     | NSString | 成功时返回：用户身份唯一标识 |
 | desc       | NSString | 返回描述                                                     |
 
 ## 2.6. 获取手机号码（服务端）
@@ -372,7 +371,6 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 | ---------- | -------- | ------------------------------------------------------------ | ---------- |
 | resultCode | NSString | 返回相应的结果码                                             | 是         |
 | token      | NSString | 成功时返回：临时凭证，token有效期2min，一次有效，同一用户（手机号）10分钟内获取token且未使用的数量不超过30个 | 成功时必填 |
-| openId     | NSString | 成功时返回：用户身份唯一标识 | 成功时必填 |
 | desc       | NSString | 调用描述                                                     | 否         |
 
 **完整一键登录调用示例**
@@ -415,7 +413,6 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 
 ```
 {
-    "openId" = "003JI1Jg1rmApSg6yG0ydUgLWZ4Bnx0rb4wtWLtyDRc0WAWoAUmE";
     "resultCode" = "103000";
     "desc" = ""
     "token" = "STsid0000001517196594066OHmZvPMBwn2MkFxwvWkV12JixwuZuyDU";
