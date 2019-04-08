@@ -48,13 +48,13 @@ sdk技术问题沟通QQ群：609994083</br>
 在需要进行登录操作的场景进行以下的初始化调用。
 
 ```objective-c
-[UASDKLogin.shareLogin registerAppId:APPID AppKey:APPKEY];
+[UASDKLogin.shareLogin registerAppId:APPID appKey:APPKEY encrypType:nil];
 ```
 
 **方法原型：**
 
 ```objective-c
-- (void)registerAppId:(NSString *)appId AppKey:(NSString *)appKey;
+- (void)registerAppId:(NSString *)appId appKey:(NSString *)appKey encrypType:(NSString *_Nullable)encrypType
 ```
 
 **参数说明：**
@@ -63,6 +63,10 @@ sdk技术问题沟通QQ群：609994083</br>
 | ------ | -------- | ----------- |
 | appID  | NSString | 应用的appid |
 | appKey | NSString | 应用密钥    |
+| encrypType | NSString | 缺省参数，开发者统一填写nil |
+
+**方法说明：**
+开发者不调用该方法注册，SDK核心的API（取号和取token）均不生效
 
 <div STYLE="page-break-after: always;"></div>
 
@@ -283,7 +287,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 **原型**
 
 ```objective-c
-- (void)registerAppId:(NSString *)appId appKey:(NSString *)appKey;
+- (void)registerAppId:(NSString *)appId appKey:(NSString *)appKey encrypType:(NSString *_Nullable)encrypType
 ```
 
 </br>
@@ -294,6 +298,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | ------ | -------- | ----------- |
 | appID  | NSString | 应用的appid |
 | appKey | NSString | 应用密钥    |
+| encrypType | NSString | 缺省参数，开发者统一填写nil |
 
 **响应参数**
 
@@ -503,5 +508,6 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 | 200048        | 用户未安装sim卡                |
 | 200050        | Socket创建失败或发送接收数据错误   |
 | 200064        | 异常数据                    |
-| 200072       |CA根证书认证失败         |
-| 200080       |本机号码校验仅支持移动号码 |
+| 200072        | CA根证书认证失败         |
+| 200080        | 本机号码校验仅支持移动号码 |
+| 200082        | 服务器繁忙              |
