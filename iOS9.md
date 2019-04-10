@@ -51,22 +51,8 @@ sdk技术问题沟通QQ群：609994083</br>
 [UASDKLogin.shareLogin registerAppId:APPID appKey:APPKEY encrypType:nil];
 ```
 
-**方法原型：**
-
-```objective-c
-- (void)registerAppId:(NSString *)appId appKey:(NSString *)appKey encrypType:(NSString *_Nullable)encrypType
-```
-
-**参数说明：**
-
-| 参数   | 类型     | 说明        |
-| ------ | -------- | ----------- |
-| appID  | NSString | 应用的appid |
-| appKey | NSString | 应用密钥    |
-| encrypType | NSString | 缺省参数，开发者统一填写nil |
-
-**方法说明：**
-开发者不调用该方法注册，SDK核心的API（取号和取token）均不生效
+**注意**
+开发者不调用该方法注册，SDK核心的API（取号和取token）均不生效，当App侧需要关闭SDK功能时，可不调用该方法
 
 <div STYLE="page-break-after: always;"></div>
 
@@ -78,17 +64,8 @@ sdk技术问题沟通QQ群：609994083</br>
 [UASDKLogin.shareLogin setTimeoutInterval:10000.f];
 ```
 
-**方法原型：**
-
-```objective-c
-- (void)setTimeoutInterval:(NSTimeInterval)timeoutInterval;
-```
-
-**参数说明：**
-
-| 参数   | 类型     | 说明        |
-| ------ | -------- | ----------- |
-| timeoutInterval | NSTimeInterval | 若小于等于0则默认为8000ms |
+**注意**
+超时设置小于等于0时，SDK均默认超时时间为8s
 
 <div STYLE="page-break-after: always;"></div>
 
@@ -470,7 +447,7 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 
 | 参数        | 类型     | 说明                                                   |
 | ----------- | -------- | ------------------------------------------------------ |
-| networkType | NSNumber | 0.无网络;</br>1.数据流量;</br>2.wifi;</br>3.数据+wifi  |
+| networkType | NSString | 0.无网络;</br>1.数据流量;</br>2.wifi;</br>3.数据+wifi  |
 | carrier     | NSNumber | 0.获取不到运营商时，该值代表移动;</br>1.中国移动;</br>2.中国联通;</br>3.中国电信 |
 
 ## 3.6. 删除临时取号凭证
@@ -514,13 +491,15 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 | 105021 | 已达当天取号限额                                             |
 | 105302 | appid不在白名单                                              |
 | 105313 | 非法请求                                                     |
+| 200021        | 数据解析异常                    |
 | 200022        | 无网络                         |
 | 200023        | 请求超时                       |
 | 200025        | 未知错误，一般配合描述分析        |
 | 200027        | 未开启数据网络或蜂窝不稳定        |
+| 200028        | 网络请求出错(HTTP状态码非200)    |
 | 200038        | 非移动网关重定向失败             |
 | 200048        | 用户未安装sim卡                |
 | 200050        | Socket创建失败或发送接收数据错误   |
-| 200064        | 异常数据                    |
+| 200064        | 服务端返回数据异常                    |
 | 200072        | CA根证书认证失败         |
 | 200082        | 服务器繁忙              |
