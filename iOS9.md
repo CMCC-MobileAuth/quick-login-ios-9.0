@@ -51,22 +51,8 @@ sdk技术问题沟通QQ群：609994083</br>
 [UASDKLogin.shareLogin registerAppId:APPID appKey:APPKEY encrypType:nil];
 ```
 
-**方法原型：**
-
-```objective-c
-- (void)registerAppId:(NSString *)appId appKey:(NSString *)appKey encrypType:(NSString *_Nullable)encrypType
-```
-
-**参数说明：**
-
-| 参数   | 类型     | 说明        |
-| ------ | -------- | ----------- |
-| appID  | NSString | 应用的appid |
-| appKey | NSString | 应用密钥    |
-| encrypType | NSString | 缺省参数，开发者统一填写nil |
-
-**方法说明：**
-开发者不调用该方法注册，SDK核心的API（取号和取token）均不生效
+**注意**
+开发者不调用该方法注册，SDK核心的API（取号和取token）均不生效，当App侧需要关闭SDK功能时，可不调用该方法
 
 <div STYLE="page-break-after: always;"></div>
 
@@ -78,17 +64,8 @@ sdk技术问题沟通QQ群：609994083</br>
 [UASDKLogin.shareLogin setTimeoutInterval:10000.f];
 ```
 
-**方法原型：**
-
-```objective-c
-- (void)setTimeoutInterval:(NSTimeInterval)timeoutInterval;
-```
-
-**参数说明：**
-
-| 参数   | 类型     | 说明        |
-| ------ | -------- | ----------- |
-| timeoutInterval | NSTimeInterval | 若小于等于0则默认为8000ms |
+**注意**
+超时设置小于等于0时，SDK均默认超时时间为8s
 
 <div STYLE="page-break-after: always;"></div>
 
