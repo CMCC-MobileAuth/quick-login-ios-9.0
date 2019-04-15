@@ -48,7 +48,7 @@ sdk技术问题沟通QQ群：609994083</br>
 在需要进行登录操作的场景进行以下的初始化调用。
 
 ```objective-c
-[UASDKLogin.shareLogin registerAppId:APPID appKey:APPKEY encrypType:nil];
+[UASDKLogin.shareLogin registerAppId:APPID appKey:APPKEY encrypType:@""];
 ```
 
 **注意**
@@ -259,7 +259,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 
 ## 3.1. 初始化
 
-用于初始化appId、appKey设置。
+用于初始化appId、appKey设置，encrypType参数暂不支持在iOS 8.2中传nil，统一先传@""
 
 **原型**
 
@@ -275,7 +275,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | ------ | -------- | ----------- |
 | appID  | NSString | 应用的appid |
 | appKey | NSString | 应用密钥    |
-| encrypType | NSString | 缺省参数，开发者统一填写nil |
+| encrypType | NSString | 缺省参数，开发者统一填写@"" |
 
 **响应参数**
 
