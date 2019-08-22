@@ -145,10 +145,12 @@ sdk技术问题沟通QQ群：609994083</br>
 3、页面需要提示应用获取到的是用户的本机号码，例如，可以在页面显示本机号码的掩码（139xxxx0000），或者提示用户将使用“<font color="red">本机号码</font>”作为账号登录或注册。
 
 4、页面必须包含移动认证协议条款，其中：
-
-​	条款名称：《中国移动认证服务条款》
-
-​	条款页面地址：https://wap.cmpassport.com/resources/html/contract.html
+* 移动：
+	* 条款名称：《中国移动认证服务条款》
+	* 条款页面地址：https://wap.cmpassport.com/resources/html/contract.html 
+* 电信：
+	* 协议名称：《中国电信天翼账号服务条款》
+	+ 协议链接：https://e.189.cn/sdk/agreement/detail.do
 
 5、应用在上线前需将满足上述1~4的授权页面（正式上线版的）截图提供给产品接口人审核。
 
