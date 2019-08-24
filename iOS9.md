@@ -90,7 +90,7 @@ sdk技术问题沟通QQ群：609994083</br>
 3. 用户授权同意后，应用发起授权请求，成功后，应用将得到换号凭证token。
 4. 携带token请求获取手机号码接口，获取用户的手机号码信息。
 
-![](image/login_process.png)
+![](https://github.com/CMCC-MobileAuth/quick-login-ios-9.0/blob/master/image/login_process.png?raw=true)
 
 ## 2.3. 取号请求
 
