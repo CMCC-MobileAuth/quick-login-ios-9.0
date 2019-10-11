@@ -13,6 +13,7 @@ sdk技术问题沟通QQ群：609994083</br>
    2. 当SDK存在缓存并且两张卡的运营商不相同时，SDK会重新获取上网卡运营商与上一次取号的运营商进行对比，若两次运营商不一致，则以最新设置的上网卡的运营商为准，重新取号，上次获取的缓存将自动失效；双卡运营商相同的情况则不需要重新取号。
    3. iOS 13上已完成双卡适配，SDK通过苹果提供的方法获取运营商，若获取失败，SDK将默认取号卡为移动运营商取号，如果匹配，则取号成功，否则SDK返回103111.
 
+
 ## 1.1. 接入流程
 
 **1.申请appid和appkey**
@@ -31,6 +32,7 @@ sdk技术问题沟通QQ群：609994083</br>
 
 应用上线前，开发者需要将一键登录取号能力的场景所使用的授权页面（授权页面参考授权页面规范）提供给移动认证产品接口人，审核无误后可正式上线。
 
+
 ## 1.2. 开发流程
 
 **第一步：下载SDK及相关文档**
@@ -42,7 +44,6 @@ sdk技术问题沟通QQ群：609994083</br>
 1. xcode版本需使用9.0以上，否则会报错
 2. 导入认证SDK的framework，直接将移动认证`TYRZSDK.framework`拖到项目中
 3. 在Xcode中找到`TARGETS-->Build Setting-->Linking-->Other Linker Flags`在这选项中需要添加`-ObjC`
-
 
 **第三步：开始使用移动认证SDK**
 
@@ -70,6 +71,10 @@ sdk技术问题沟通QQ群：609994083</br>
 **小技巧：**如果开发者希望能够单独的给预取号和授权登录请求设置超时时间，可以在调用这俩方法前都分别设置一次这个超时时间即可。
 
 <div STYLE="page-break-after: always;"></div>
+
+
+
+
 # 2. 一键登录功能
 
 ## 2.1. 准备工作
@@ -106,19 +111,13 @@ sdk技术问题沟通QQ群：609994083</br>
 }];
 ```
 
-**取号方法原型：**
+**取号方法原型**
 
 ```objective-c
 - (void)getPhoneNumberCompletion:(void (^)(NSDictionary * sender))completion;
 ```
 
-**参数说明：**
-
-| 参数       | 类型           | 说明                                         |
-| ---------- | -------------- | -------------------------------------------- |
-| completion | Block          | 取号回调                                     |
-
-**返回说明：**
+**completion返回参数**
 
 | 参数          | 类型     | 说明                          |
 | ------------- | -------- | ----------------------------- |
@@ -151,7 +150,7 @@ sdk技术问题沟通QQ群：609994083</br>
 	* 条款页面地址：https://wap.cmpassport.com/resources/html/contract.html 
 * 电信：
 	* 协议名称：《中国电信天翼账号服务条款》
-	+ 协议链接：https://e.189.cn/sdk/agreement/detail.do
+	* 协议链接：https://e.189.cn/sdk/agreement/detail.do
 
 5、应用在上线前需将满足上述1~4的授权页面（正式上线版的）截图提供给产品接口人审核。
 
@@ -193,7 +192,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 
 用户调用授权方法，获取取号token
 
-**请求示例代码：**
+**请求示例代码**
 
 ```objective-c
 //1.构建授权页控制器
@@ -229,21 +228,14 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 //@end
 ```
 
-**授权方法原型：**
+**授权方法原型**
 
 ```objective-c
 - (void)getAuthorizationCompletion:(void (^)(NSDictionary *sender))completion;
 ```
 
-**参数说明：**
 
-**请求参数**
-
-| 参数     | 类型                 | 说明                                                         |
-| -------- | -------------------- | ------------------------------------------------------------ |
-| completion | Block                | 登录回调                                                     |
-
-**响应参数**
+**completion返回参数**
 
 | 参数          | 类型     | 说明                                                         |
 | ------------- | -------- | ------------------------------------------------------------ |
@@ -257,11 +249,13 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 
 详细请开发者查看移动认证服务端接口文档说明。
 
-
-
 ## 2.7. 本机号码校验（服务端）
 
 详细请开发者查看移动认证服务端接口文档说明。
+
+<div STYLE="page-break-after: always;"></div>
+
+
 
 # 3. SDK方法说明
 
@@ -285,9 +279,6 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | appKey | NSString | 应用密钥    |
 | encrypType | NSString | 缺省参数，开发者统一填写@"" |
 
-**响应参数**
-
-无
 
 ## 3.2. 取号请求
 
@@ -300,13 +291,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 		(void (^)(NSDictionary * sender))completion;
 ```
 
-**请求参数**
-
-| 参数       | 类型           | 说明                                       |
-| ---------- | -------------- | ------------------------------------------ |
-| completion | Block          | 取号回调 |
-
-**响应参数**
+**completion返回参数**
 
 | 参数          | 类型     | 说明                          |
 | ------------- | -------- | ----------------------------- |
@@ -328,7 +313,6 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
     }];
 ```
 
-
 ## 3.3. 授权请求
 
 SDK的一键登录接口，获取到的token可以在移动认证服务端获取完整手机号
@@ -340,13 +324,7 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 		(void (^)(NSDictionary *sender))completion;
 ```
 
-**请求参数**
-
-| 参数     | 类型                 | 说明                                                         |
-| -------- | -------------------- | ------------------------------------------------------------ |
-| completion | Block                | 登录回调                                                     |
-
-**响应参数**
+**completion返回参数**
 
 | 参数          | 类型     | 说明                                                         | 是否必填   |
 | ------------- | -------- | ------------------------------------------------------------ | ---------- |
@@ -396,24 +374,16 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 
 ### 3.4.1. 方法描述
 
-**功能：**
+**功能**
 该方法用于获取**本机号码校验校验token**
 
-**原型：**
+**原型**
 
 ```objective-c
 - (void)mobileAuthCompletion:(void (^)(NSDictionary *sender))completion;
 ```
 
-### 3.4.2. 参数说明
-
-**请求参数**
-
-| 参数     | 类型   | 说明  |
-| :-:     | :-:    | :-: |
-| completion | Block  | 请求回调  |
-
-**响应参数**
+**completion返回参数**
 
 | 参数 | 类型 | 说明 |
 | :-: | :-: | :-: |
@@ -429,13 +399,13 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 
 本方法用于获取用户当前上网卡的网络环境和运营商
 
-**原型：**
+**原型**
 
 ```objective-c
 @property (nonatomic,readonly) NSDictionary<NSString *, NSNumber *> *networkType;
 ```
 
-**响应参数**
+**networkType返回参数**
 
 | 参数        | 类型     | 说明                                                         |
 | ----------- | -------- | ------------------------------------------------------------ |
@@ -454,13 +424,18 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 - (BOOL)delectScrip;
 ```
 
-**响应参数**
+**completion返回参数**
 
 | 参数  | 类型 | 说明                                          |
 | ----- | ---- | --------------------------------------------- |
 | state | BOOL | 删除结果状态，（YES：有缓存，已执行删除，NO：无缓存，不执行删除） |
 
 <div STYLE="page-break-after: always;"></div>
+
+
+
+
+
 # 4. 返回码说明
 
 ## 4.1. SDK返回码
