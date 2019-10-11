@@ -11,7 +11,7 @@ sdk技术问题沟通QQ群：609994083</br>
 6. 关于双卡的适配问题：
    1. 当两张卡的运营商不一致时，SDK会获取设备上网卡的运营商并进行取号，但上网卡不一定会获取成功（飞行模式状态时），若获取失败，SDK将默认取号卡为移动运营商取号，如果匹配，则取号成功，否则SDK返回103111；
    2. 当SDK存在缓存并且两张卡的运营商不相同时，SDK会重新获取上网卡运营商与上一次取号的运营商进行对比，若两次运营商不一致，则以最新设置的上网卡的运营商为准，重新取号，上次获取的缓存将自动失效；双卡运营商相同的情况则不需要重新取号。
-   3. iOS 13上，双卡的适配在9.1.0.1之前的版本（含9.1.0.1）会失效，需要等iOS 13正式发布后再做相应的适配，，如果在调用SDK方法时，不在主线程上调用，会有很低的概率导致应用crash
+   3. iOS 13上已完成双卡适配，SDK通过苹果提供的方法获取运营商，若获取失败，SDK将默认取号卡为移动运营商取号，如果匹配，则取号成功，否则SDK返回103111.
 
 ## 1.1. 接入流程
 
@@ -126,6 +126,7 @@ sdk技术问题沟通QQ群：609994083</br>
 | desc          | NSString | 调用描述                      |
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000” |
 | operatorType  | NSString | 运营商，枚举值包含：未知，中国移动，中国联通，中国电信 |
+| traceId       | NSString | 用于定位SDK问题 |
 
 
 ## 2.4. 创建授权页
@@ -250,6 +251,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | token         | NSString | 成功时返回：临时凭证，token有效期2min，一次有效，同一用户（手机号）10分钟内获取token且未使用的数量不超过30个 |
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000”                                |
 | desc          | NSString | 返回描述                                                     |
+| traceId       | NSString | 用于定位SDK问题 |
 
 ## 2.6. 获取手机号码（服务端）
 
@@ -312,6 +314,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | desc          | NSString | 调用描述                      |
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000” |
 | operatorType  | NSString | 运营商，如“中国移动”  |
+| traceId       | NSString | 用于定位SDK问题 |
 
 **请求示例代码**
 
@@ -325,16 +328,6 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
     }];
 ```
 
-**响应示例代码**
-
-```
-{
-    "resultCode" : "103000",
-    "desc" : "success",
-    "securityPhone" : "138XXXX0000",
-    "operatorType" : "中国移动",
-}
-```
 
 ## 3.3. 授权请求
 
@@ -361,6 +354,7 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 | token         | NSString | 成功时返回：临时凭证，token有效期2min，一次有效，同一用户（手机号）10分钟内获取token且未使用的数量不超过30个 | 成功时必填 |
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000”                                |            |
 | desc          | NSString | 调用描述                                                     | 否         |
+| traceId       | NSString | 用于定位SDK问题 |
 
 **完整一键登录调用示例**
 
@@ -398,16 +392,6 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 //@end
 ```
 
-**响应示例代码**
-
-```
-{
-    "resultCode" = "103000";
-    "desc" = ""
-    "token" = "STsid0000001517196594066OHmZvPMBwn2MkFxwvWkV12JixwuZuyDU";
-}
-```
-
 ## 3.4. 本机号码校验
 
 ### 3.4.1. 方法描述
@@ -436,6 +420,7 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 | resultCode | NSString | 返回码 |
 | desc | NSString | 描述 |
 | token | NSString | 本机号码校验token |
+| traceId       | NSString | 用于定位SDK问题 |
 
 
 
