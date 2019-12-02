@@ -124,7 +124,7 @@ sdk技术问题沟通QQ群：609994083</br>
 | resultCode    | NSString | 返回相应的结果码              |
 | desc          | NSString | 调用描述                      |
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000” |
-| operatorType  | NSString | 运营商，枚举值包含：未知，中国移动，中国联通，中国电信 |
+| operatorType  | NSString | 运营商类型：</br>0.未知；</br>1.移动流量；</br>2.联通流量；</br>3.电信流量 |
 | traceId       | NSString | 用于定位SDK问题 |
 
 
@@ -410,7 +410,7 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 | 参数        | 类型     | 说明                                                         |
 | ----------- | -------- | ------------------------------------------------------------ |
 | networkType | NSString | 0.无网络;</br>1.数据流量;</br>2.wifi;</br>3.数据+wifi        |
-| carrier     | NSNumber | 0.未知（未插sim卡，其它运营商等）;</br>1.中国移动;</br>2.中国联通;</br>3.中国电信 |
+| carrier     | NSNumber | 运营商类型：</br>0.未知；</br>1.移动流量；</br>2.联通流量；</br>3.电信流量 |
 
 ## 3.6. 删除临时取号凭证
 
