@@ -298,7 +298,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | resultCode    | NSString | 返回相应的结果码              |
 | desc          | NSString | 调用描述                      |
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000” |
-| operatorType  | NSString | 运营商，如“中国移动”  |
+| operatorType  | NSString | 运营商类型：</br>0.未知；</br>1.移动流量；</br>2.联通流量；</br>3.电信流量   |
 | traceId       | NSString | 用于定位SDK问题 |
 
 **请求示例代码**
