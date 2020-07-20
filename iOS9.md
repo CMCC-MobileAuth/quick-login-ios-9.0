@@ -395,7 +395,7 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 **completion返回参数**
 
 | 参数 | 类型 | 说明 |
-| :-: | :-: | :-: |
+| ---- |------ | ------------ |
 | resultCode | NSString | 返回码 |
 | desc | NSString | 描述 |
 | token | NSString | 本机号码校验token |
