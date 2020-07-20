@@ -126,6 +126,7 @@ sdk技术问题沟通QQ群：609994083</br>
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000” |
 | operatorType  | NSString | 运营商类型：</br>0.未知；</br>1.移动流量；</br>2.联通流量；</br>3.电信流量 |
 | traceId       | NSString | 用于定位SDK问题 |
+| scripExpiresIn | NSString | 表示scrip有效期，单位：秒 |
 
 
 ## 2.4. 创建授权页
@@ -244,6 +245,8 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000”                                |
 | desc          | NSString | 返回描述                                                     |
 | traceId       | NSString | 用于定位SDK问题 |
+| scripExpiresIn | NSString | 表示scrip有效期，单位：秒  |
+| tokenExpiresIn | NSString | 表示token有效期，单位：秒  |
 
 ## 2.6. 获取手机号码（服务端）
 
@@ -300,6 +303,8 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000” |
 | operatorType  | NSString | 运营商类型：</br>0.未知；</br>1.移动流量；</br>2.联通流量；</br>3.电信流量   |
 | traceId       | NSString | 用于定位SDK问题 |
+| scripExpiresIn | NSString | 表示scrip有效期，单位：秒  |
+| tokenExpiresIn | NSString | 表示token有效期，单位：秒  |
 
 **请求示例代码**
 
@@ -333,6 +338,8 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000”                                |            |
 | desc          | NSString | 调用描述                                                     | 否         |
 | traceId       | NSString | 用于定位SDK问题 |
+| scripExpiresIn | NSString | 表示scrip有效期，单位：秒  |
+| tokenExpiresIn | NSString | 表示token有效期，单位：秒  |
 
 **完整一键登录调用示例**
 
@@ -391,7 +398,8 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 | desc | NSString | 描述 |
 | token | NSString | 本机号码校验token |
 | traceId       | NSString | 用于定位SDK问题 |
-
+| scripExpiresIn | NSString | 表示scrip有效期，单位：秒  |
+| tokenExpiresIn | NSString | 表示token有效期，单位：秒  |
 
 
 
@@ -480,4 +488,5 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 | 200064        | 服务端返回数据异常                    |
 | 200072        | CA根证书认证失败         |
 | 200082        | 服务器繁忙              |
-| 200089 | SDK繁忙（正在处理上一次请求） |
+| 200086        | ppLocation为空         |
+| 200096        | 当前网络不支持取号（WiFi+数据环境下，DNS解析取号地址得到的IP类型与蜂窝数据端口支持的IP类型不匹配导致，建议更换WiFi网络或关闭WiFi重试）|
