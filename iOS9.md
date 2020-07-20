@@ -153,8 +153,8 @@ sdk技术问题沟通QQ群：609994083</br>
 	* 协议名称：《中国电信天翼账号服务条款》
 	* 协议链接：https://e.189.cn/sdk/agreement/detail.do
 * 联通：
- * 协议名称：《中国联通认证服务协议》
- + 协议链接：https://opencloud.wostore.cn/authz/resource/html/disclaimer.html?fromsdk=true
+	* 协议名称：《中国联通认证服务协议》
+	* 协议链接：https://opencloud.wostore.cn/authz/resource/html/disclaimer.html?fromsdk=true
 
 5、应用在上线前需将满足上述1~4的授权页面（正式上线版的）截图提供给产品接口人审核。
 
