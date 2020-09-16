@@ -124,7 +124,7 @@ sdk技术问题沟通QQ群：609994083</br>
 | resultCode    | NSString | 返回相应的结果码              |
 | desc          | NSString | 调用描述                      |
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000” |
-| operatorType  | NSString | 运营商类型：</br>0.未知；</br>1.移动流量；</br>2.联通流量；</br>3.电信流量 |
+| operatorType  | NSString | 运营商类型：</br>未知；</br>中国移动；</br>中国联通；</br>中国电信 |
 | traceId       | NSString | 用于定位SDK问题 |
 | scripExpiresIn | NSString | 成功时返回。表示scrip有效期，单位：秒。注：当scrip仍然有效时调用该方法，scripExpiresIn=notExpire |
 
@@ -304,7 +304,7 @@ CustomAuthViewController *authVC = [[CustomAuthViewController alloc]init];
 | resultCode    | NSString | 返回相应的结果码              |
 | desc          | NSString | 调用描述                      |
 | securityPhone | NSString | 手机号码掩码，如“138XXXX0000” |
-| operatorType  | NSString | 运营商类型：</br>0.未知；</br>1.移动流量；</br>2.联通流量；</br>3.电信流量   |
+| operatorType  | NSString | 运营商类型：</br>未知；</br>中国移动；</br>中国联通；</br>中国电信   |
 | traceId       | NSString | 用于定位SDK问题 |
 | scripExpiresIn | NSString | 成功时返回。表示scrip有效期，单位：秒。注：当scrip仍然有效时调用该方法，scripExpiresIn=notExpire  |
 
