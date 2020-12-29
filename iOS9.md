@@ -411,10 +411,10 @@ SDK的一键登录接口，获取到的token可以在移动认证服务端获取
 **原型**
 
 ```objective-c
-@property (nonatomic,readonly) NSDictionary<NSString *, NSNumber *> *networkType;
+@property (nonatomic,readonly) NSDictionary<NSString *, NSNumber *> *networkInfo;
 ```
 
-**networkType返回参数**
+**networkInfo返回参数**
 
 | 参数        | 类型     | 说明                                                         |
 | ----------- | -------- | ------------------------------------------------------------ |
